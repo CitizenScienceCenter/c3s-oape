@@ -1,9 +1,8 @@
 
 openapi:
-  path: /home/encima/dev/go/c3s-oape/swagger/openapi.json
+  path: /Users/encima/dev/go/c3s-oape/swagger/openapi.json
 server:
-  staticDir: /home/encima/dev/go/c3s-oape/static/
-  port: 6666
+  staticDir: /Users/encima/dev/go/c3s-oape/static/
 system-db:
   parent-stmt: 
   parent-fields:
@@ -14,6 +13,6 @@ system-db:
     - user
 database:
   type: postgres
-  conn: postgresql://test:test@localhost/openape
+  conn: postgresql://test:test@localhost/openape?sslmode=disable
   required: true
 

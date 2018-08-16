@@ -2,7 +2,16 @@
   "openapi": "3.0.0",
   "servers": [
     {
-      "url": "http://0.0.0.0:8080/api/v1"
+      "url": "http://0.0.0.0:{port}/{basePath}",
+      "description": "Local development API server",
+      "variables": {
+        "port": {
+          "default": "6666"
+        },
+        "basePath": {
+          "default": "/api/v1"
+        }
+      }
     }
   ],
   "info": {
