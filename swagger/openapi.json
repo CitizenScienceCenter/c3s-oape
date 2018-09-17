@@ -1,22 +1,58 @@
 {
   "openapi": "3.0.0",
-  "servers": [
-    {
-      "url": "http://0.0.0.0:8080/api/v1"
-    }
-  ],
   "info": {
     "title": "CCCS",
     "version": "0.1"
   },
+  "servers": [
+    {
+      "url": "{scheme}://{environment}{port}/{basePath}",
+      "variables": {
+        "scheme": {
+          "default": "http",
+          "enum": [
+            "http",
+            "https"
+          ]
+        },
+        "environment": {
+          "default": "api",
+          "enum": [
+            "api",
+            "api.dev",
+            "api.staging"
+          ]
+        },
+        "port": {
+          "default": "8080",
+          "enum": [
+            "8080"
+          ]
+        },
+        "basePath": {
+          "default": "/api/v1",
+          "enum": [
+            "/api/v1"
+          ]
+        }
+      }
+    }
+  ],
   "paths": {
     "/users": {
       "get": {
         "tags": [
           "Users"
         ],
+        "security": [
+          {
+            "oauth2": [
+
+            ]
+          }
+        ],
         "x-swagger-router-controller": "api.user",
-        "operationId": "get",
+        "operationId": "get_users",
         "parameters": [
           {
             "name": "search_term",
@@ -31,7 +67,7 @@
             "schema": {
               "type": "integer",
               "minimum": 0,
-              "default": 100
+              "default": 20
             }
           }
         ],
@@ -82,8 +118,17 @@
           "Users"
         ],
         "summary": "OAuth2 token info",
-        "x-swagger-router-controller": "decorators.access_checks",
-        "operationId": "ensure_key",
+        "x-swagger-router-controller": "api.user",
+        "operationId": "validate",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Token info object",
@@ -105,17 +150,77 @@
         ],
         "summary": "Registration end point for a user account",
         "x-swagger-router-controller": "api.user",
-        "operationId": "register",
+        "operationId": "register_user",
         "responses": {
           "200": {
             "description": "Created user"
           }
         },
         "requestBody": {
+          "$ref": "#/components/requestBodies/User"
+        }
+      }
+    },
+    "/users/reset": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "x-swagger-router-controller": "api.user",
+        "operationId": "reset",
+        "summary": "Reset user password",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Password reset"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "x-swagger-router-controller": "api.user",
+        "operationId": "verify_reset",
+        "summary": "Verify password reset token",
+        "responses": {
+          "200": {
+            "description": "Verified and reset"
+          },
+          "401": {
+            "description": "Unauthorised user"
+          }
+        },
+        "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Users"
+                "type": "object",
+                "required": [
+                  "token",
+                  "pwd",
+                  "id"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "token": {
+                    "type": "string"
+                  },
+                  "pwd": {
+                    "type": "string"
+                  }
+                }
               }
             }
           }
@@ -160,13 +265,18 @@
             "apiKeyHeader": [
 
             ]
+          },
+          {
+            "anonUser": [
+
+            ]
           }
         ],
         "tags": [
           "Users"
         ],
         "x-swagger-router-controller": "api.user",
-        "operationId": "get_one",
+        "operationId": "get_user",
         "summary": "Get all users (or those matching an ID)",
         "parameters": [
           {
@@ -188,6 +298,49 @@
             "description": "User not found"
           }
         }
+      },
+      "put": {
+        "security": [
+          {
+            "apiKeyHeader": [
+
+            ]
+          },
+          {
+            "anonUser": [
+
+            ]
+          }
+        ],
+        "tags": [
+          "Users"
+        ],
+        "x-swagger-router-controller": "api.user",
+        "operationId": "update_user",
+        "summary": "Update user details (change password, add details etc)",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/id"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "User updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Users"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found"
+          }
+        },
+        "requestBody": {
+          "$ref": "#/components/requestBodies/User"
+        }
       }
     },
     "/projects": {
@@ -196,15 +349,14 @@
           "Projects"
         ],
         "x-swagger-router-controller": "api.project",
-        "operationId": "get",
+        "operationId": "get_projects",
         "summary": "Get all projects",
         "parameters": [
           {
             "name": "search_term",
             "in": "query",
             "schema": {
-              "type": "string",
-              "pattern": "^[a-zA-Z0-9]*$"
+              "type": "string"
             }
           },
           {
@@ -213,7 +365,7 @@
             "schema": {
               "type": "integer",
               "minimum": 0,
-              "default": 100
+              "default": 20
             }
           }
         ],
@@ -245,7 +397,7 @@
           "Projects"
         ],
         "x-swagger-router-controller": "api.project",
-        "operationId": "create",
+        "operationId": "create_project",
         "summary": "Post a project",
         "responses": {
           "201": {
@@ -264,13 +416,18 @@
             "apiKeyHeader": [
 
             ]
+          },
+          {
+            "anonUser": [
+
+            ]
           }
         ],
         "tags": [
           "Projects"
         ],
         "x-swagger-router-controller": "api.project",
-        "operationId": "get_one",
+        "operationId": "get_project",
         "summary": "Get a single project",
         "parameters": [
           {
@@ -298,7 +455,7 @@
           "Projects"
         ],
         "x-swagger-router-controller": "api.project",
-        "operationId": "put",
+        "operationId": "put_project",
         "summary": "Modify/Create a project",
         "parameters": [
           {
@@ -329,7 +486,7 @@
           "Projects"
         ],
         "x-swagger-router-controller": "api.project",
-        "operationId": "delete",
+        "operationId": "delete_project",
         "summary": "Remove a project",
         "parameters": [
           {
@@ -346,11 +503,50 @@
         }
       }
     },
+    "/projects/{id}/stats": {
+      "get": {
+        "security": [
+          {
+            "apiKeyHeader": [
+
+            ]
+          },
+          {
+            "anonUser": [
+
+            ]
+          }
+        ],
+        "tags": [
+          "Projects"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/id"
+          }
+        ],
+        "x-swagger-router-controller": "api.project",
+        "operationId": "get_stats",
+        "responses": {
+          "200": {
+            "description": "Project stats"
+          },
+          "404": {
+            "description": "Project does not exist"
+          }
+        }
+      }
+    },
     "/projects/{id}/tasks": {
       "get": {
         "security": [
           {
             "apiKeyHeader": [
+
+            ]
+          },
+          {
+            "anonUser": [
 
             ]
           }
@@ -363,12 +559,20 @@
             "$ref": "#/components/parameters/id"
           },
           {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": 0
+            }
+          },
+          {
             "name": "limit",
             "in": "query",
             "schema": {
               "type": "integer",
               "minimum": 0,
-              "default": 100
+              "default": 20
             }
           }
         ],
@@ -384,11 +588,57 @@
         }
       }
     },
+    "/projects/{id}/tasks/random": {
+      "get": {
+        "security": [
+          {
+            "apiKeyHeader": [
+
+            ]
+          },
+          {
+            "anonUser": [
+
+            ]
+          }
+        ],
+        "tags": [
+          "Projects"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/id"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "x-swagger-router-controller": "api.task",
+        "operationId": "get_random",
+        "responses": {
+          "200": {
+            "description": "A single random project task"
+          },
+          "404": {
+            "description": "Project does not exist or task not found"
+          }
+        }
+      }
+    },
     "/tasks": {
       "get": {
         "security": [
           {
             "apiKeyHeader": [
+
+            ]
+          },
+          {
+            "anonUser": [
 
             ]
           }
@@ -397,8 +647,34 @@
           "Tasks"
         ],
         "x-swagger-router-controller": "api.task",
-        "operationId": "get",
+        "operationId": "get_tasks",
         "summary": "Get a list of tasks",
+        "parameters": [
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": 0
+            }
+          },
+          {
+            "name": "search_term",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 20
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "List of tasks",
@@ -427,7 +703,7 @@
           "Tasks"
         ],
         "x-swagger-router-controller": "api.task",
-        "operationId": "create",
+        "operationId": "create_tasks",
         "summary": "Post an array of tasks",
         "responses": {
           "200": {
@@ -466,7 +742,7 @@
           "Tasks"
         ],
         "x-swagger-router-controller": "api.task",
-        "operationId": "delete",
+        "operationId": "delete_tasks",
         "summary": "Delete an array of tasks",
         "responses": {
           "204": {
@@ -494,13 +770,18 @@
             "apiKeyHeader": [
 
             ]
+          },
+          {
+            "anonUser": [
+
+            ]
           }
         ],
         "tags": [
           "Tasks"
         ],
         "x-swagger-router-controller": "api.task",
-        "operationId": "get_one",
+        "operationId": "get_task",
         "summary": "Get a single task",
         "parameters": [
           {
@@ -535,7 +816,7 @@
           "Tasks"
         ],
         "x-swagger-router-controller": "api.task",
-        "operationId": "put",
+        "operationId": "put_task",
         "summary": "Modify/Create a task",
         "parameters": [
           {
@@ -572,7 +853,7 @@
           "Tasks"
         ],
         "x-swagger-router-controller": "api.task",
-        "operationId": "delete_one",
+        "operationId": "delete_task",
         "summary": "Delete a single tasks",
         "parameters": [
           {
@@ -599,8 +880,26 @@
           "Submissions"
         ],
         "x-swagger-router-controller": "api.submission",
-        "operationId": "get",
+        "operationId": "get_submissions",
         "summary": "Get a single submission",
+        "parameters": [
+          {
+            "name": "search_term",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 20
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "List of tasks",
@@ -623,19 +922,19 @@
             "apiKeyHeader": [
 
             ]
+          },
+          {
+            "anonUser": [
+
+            ]
           }
         ],
         "tags": [
           "Submissions"
         ],
         "x-swagger-router-controller": "api.submission",
-        "operationId": "create",
+        "operationId": "create_submission",
         "summary": "Post a submission",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/id"
-          }
-        ],
         "responses": {
           "200": {
             "description": "Submission created",
@@ -664,7 +963,7 @@
           "Submissions"
         ],
         "x-swagger-router-controller": "api.submission",
-        "operationId": "put",
+        "operationId": "put_submission",
         "summary": "Modify/Create a submission",
         "parameters": [
           {
@@ -695,7 +994,7 @@
           "Submissions"
         ],
         "x-swagger-router-controller": "api.submission",
-        "operationId": "delete",
+        "operationId": "delete_submission",
         "summary": "Remove a submission",
         "parameters": [
           {
@@ -725,7 +1024,7 @@
           "Submissions"
         ],
         "x-swagger-router-controller": "api.submission",
-        "operationId": "get_one",
+        "operationId": "get_submission",
         "summary": "Get a single submission",
         "parameters": [
           {
@@ -761,41 +1060,27 @@
         "tags": [
           "Media"
         ],
-        "description": "Add a new media attachment",
+        "description": "The media details (for files already on the server or remotely hosted)",
         "x-swagger-router-controller": "api.media",
-        "operationId": "upload",
+        "operationId": "create_media",
         "responses": {
           "200": {
             "description": "Media attached"
           }
         },
         "requestBody": {
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "id": {
-                    "type": "string"
-                  },
-                  "attachment": {
-                    "description": "The file to be uploaded",
-                    "type": "string",
-                    "format": "binary"
-                  }
-                },
-                "required": [
-                  "attachment"
-                ]
-              }
-            }
-          }
+          "$ref": "#/components/requestBodies/Media"
         }
       },
       "get": {
         "security": [
           {
             "apiKeyHeader": [
+
+            ]
+          },
+          {
+            "anonUser": [
 
             ]
           }
@@ -805,7 +1090,25 @@
         ],
         "description": "Get a list of media",
         "x-swagger-router-controller": "api.media",
-        "operationId": "get",
+        "operationId": "get_media",
+        "parameters": [
+          {
+            "name": "search_term",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 20
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "List of media",
@@ -823,11 +1126,141 @@
         }
       }
     },
+    "/media/upload": {
+      "post": {
+        "security": [
+          {
+            "apiKeyHeader": [
+
+            ]
+          }
+        ],
+        "tags": [
+          "Media"
+        ],
+        "description": "Add a new media attachment",
+        "x-swagger-router-controller": "api.media",
+        "operationId": "upload",
+        "responses": {
+          "200": {
+            "description": "Media attached"
+          }
+        },
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "attachment": {
+                    "description": "The file to be uploaded",
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "attachment"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
     "/media/{id}": {
       "get": {
         "security": [
           {
             "apiKeyHeader": [
+
+            ]
+          },
+          {
+            "anonUser": [
+
+            ]
+          }
+        ],
+        "tags": [
+          "Media"
+        ],
+        "x-swagger-router-controller": "api.media",
+        "operationId": "get_medium",
+        "summary": "Get a single file",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Return Media",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Media does not exist"
+          }
+        }
+      },
+      "put": {
+        "security": [
+          {
+            "apiKeyHeader": [
+
+            ]
+          }
+        ],
+        "tags": [
+          "Media"
+        ],
+        "x-swagger-router-controller": "api.media",
+        "operationId": "put_medium",
+        "summary": "Put a single file",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/id"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Return Media",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Media"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Media does not exist"
+          }
+        },
+        "requestBody": {
+          "$ref": "#/components/requestBodies/Media"
+        }
+      }
+    },
+    "/media/source/{id}": {
+      "get": {
+        "security": [
+          {
+            "apiKeyHeader": [
+
+            ]
+          },
+          {
+            "anonUser": [
 
             ]
           }
@@ -862,7 +1295,6 @@
           }
         }
       },
-      "/media/source/{id}": null,
       "delete": {
         "security": [
           {
@@ -875,7 +1307,7 @@
           "Media"
         ],
         "x-swagger-router-controller": "api.media",
-        "operationId": "delete",
+        "operationId": "delete_medium",
         "summary": "Delete a single Media file",
         "parameters": [
           {
@@ -888,6 +1320,177 @@
           },
           "404": {
             "description": "Media does not exist"
+          }
+        }
+      }
+    },
+    "/groups": {
+      "post": {
+        "security": [
+          {
+            "apiKeyHeader": [
+
+            ]
+          }
+        ],
+        "tags": [
+          "Groups"
+        ],
+        "description": "Add a new group",
+        "x-swagger-router-controller": "api.group",
+        "operationId": "create",
+        "responses": {
+          "200": {
+            "description": "Group Created"
+          }
+        },
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Groups"
+              }
+            }
+          },
+          "required": true
+        }
+      },
+      "get": {
+        "security": [
+          {
+            "apiKeyHeader": [
+
+            ]
+          },
+          {
+            "anonUser": [
+
+            ]
+          }
+        ],
+        "tags": [
+          "Groups"
+        ],
+        "description": "Get a list of group",
+        "x-swagger-router-controller": "api.group",
+        "operationId": "get_groups",
+        "parameters": [
+          {
+            "name": "search_term",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of group",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Groups"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/groups/{id}": {
+      "get": {
+        "security": [
+          {
+            "apiKeyHeader": [
+
+            ]
+          },
+          {
+            "anonUser": [
+
+            ]
+          }
+        ],
+        "tags": [
+          "Orgs"
+        ],
+        "x-swagger-router-controller": "api.group",
+        "operationId": "get_group",
+        "summary": "Get a single group",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Return Organisation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Groups"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Group does not exist"
+          }
+        }
+      },
+      "put": {
+        "security": [
+          {
+            "apiKeyHeader": [
+
+            ]
+          }
+        ],
+        "tags": [
+          "Orgs"
+        ],
+        "x-swagger-router-controller": "api.group",
+        "operationId": "put_group",
+        "summary": "Modify a group",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/id"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Return Group",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Groups"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Group does not exist"
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Groups"
+              }
+            }
           }
         }
       }
@@ -916,11 +1519,29 @@
           }
         }
       },
+      "User": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Users"
+            }
+          }
+        }
+      },
       "Project": {
         "content": {
           "application/json": {
             "schema": {
               "$ref": "#/components/schemas/Project"
+            }
+          }
+        }
+      },
+      "Media": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Media"
             }
           }
         }
@@ -931,6 +1552,11 @@
         "type": "apiKey",
         "in": "header",
         "name": "X-API-KEY"
+      },
+      "anonUser": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-ANON"
       },
       "oauth2": {
         "type": "oauth2",
@@ -948,10 +1574,6 @@
     "schemas": {
       "Users": {
         "type": "object",
-        "required": [
-          "email",
-          "pwd"
-        ],
         "properties": {
           "id": {
             "type": "string",
@@ -969,6 +1591,50 @@
             "type": "string"
           },
           "api_key": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Creation time",
+            "example": "2015-07-07T15:49:51.230+02:00",
+            "readOnly": true
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Creation time",
+            "example": "2015-07-07T15:49:51.230+02:00",
+            "readOnly": true
+          }
+        }
+      },
+      "Media": {
+        "type": "object",
+        "required": [
+          "source_id",
+          "path",
+          "name"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "maxLength": 20,
+            "readOnly": true
+          },
+          "source_id": {
+            "type": "string",
+            "description": "The task or project or user it is related to"
+          },
+          "path": {
+            "type": "string",
+            "description": "Local or remote path"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of file"
+          },
+          "filetype": {
             "type": "string"
           },
           "created_at": {
@@ -1066,33 +1732,6 @@
           }
         }
       },
-      "Media": {
-        "type": "object",
-        "required": [
-          "id",
-          "path"
-        ],
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "Uniqe media ID"
-          },
-          "source_id": {
-            "type": "string",
-            "description": "linking to a task or a submission"
-          },
-          "path": {
-            "type": "string",
-            "description": "location on filesystem"
-          },
-          "name": {
-            "type": "string"
-          },
-          "filetype": {
-            "type": "string"
-          }
-        }
-      },
       "Task": {
         "type": "object",
         "required": [
@@ -1139,10 +1778,41 @@
           }
         }
       },
+      "Groups": {
+        "type": "object",
+        "required": [
+          "name",
+          "description",
+          "created_by"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "readOnly": true
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "created_by": {
+            "type": "string"
+          },
+          "api_key": {
+            "type": "string",
+            "readOnly": true
+          }
+        }
+      },
       "Submission": {
         "type": "object",
         "required": [
-          "task_id"
+          "task_id",
+          "user_id"
         ],
         "properties": {
           "id": {

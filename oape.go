@@ -5,5 +5,6 @@ import (
 )
 
 func main() {
-	openape.NewServer("/home/encima/dev/go/c3s-oape/config")
+	o := openape.NewServer("/home/encima/dev/go/c3s-oape/config")
+	o.RunServer()
 }
