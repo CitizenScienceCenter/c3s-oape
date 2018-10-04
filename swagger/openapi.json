@@ -46,6 +46,11 @@
         ],
         "security": [
           {
+            "apiKeyHeader": [
+
+            ]
+          },
+          {
             "oauth2": [
 
             ]
