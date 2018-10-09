@@ -1,6 +1,9 @@
 
+raml:
+  path: /Users/encima/dev/go/c3s-oape/api/root.raml
 openapi:
-  path: /Users/encima/dev/go/c3s-oape/swagger/openapi.json
+  path: /Users/encima/dev/go/c3s-oape/api/openapi.json
+  src: FILE
 server:
   staticDir: /Users/encima/dev/go/c3s-oape/static/
 system-db:

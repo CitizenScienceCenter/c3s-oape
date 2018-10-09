@@ -1,0 +1,89 @@
+{
+    "definitions": {},
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://example.com/root.json",
+    "type": "object",
+    "title": "User Schema",
+    "required": [
+      "api_key",
+      "created_at",
+      "email",
+      "id",
+      "pwd",
+      "updated_at",
+      "username"
+    ],
+    "properties": {
+      "api_key": {
+        "$id": "#/properties/api_key",
+        "type": "string",
+        "title": "The Api_key Schema",
+        "default": "",
+        "examples": [
+          "string"
+        ],
+        "pattern": "^(.*)$"
+      },
+      "created_at": {
+        "$id": "#/properties/created_at",
+        "type": "string",
+        "title": "The Created_at Schema",
+        "default": "",
+        "examples": [
+          "2015-07-07T15:49:51.230+02:00"
+        ],
+        "pattern": "^(.*)$"
+      },
+      "email": {
+        "$id": "#/properties/email",
+        "type": "string",
+        "title": "The Email Schema",
+        "default": "",
+        "examples": [
+          "test@test.com"
+        ],
+        "pattern": "^(.*)$"
+      },
+      "id": {
+        "$id": "#/properties/id",
+        "type": "string",
+        "title": "The Id Schema",
+        "default": "",
+        "examples": [
+          "string"
+        ],
+        "pattern": "^(.*)$"
+      },
+      "pwd": {
+        "$id": "#/properties/pwd",
+        "type": "string",
+        "title": "The Pwd Schema",
+        "default": "",
+        "examples": [
+          "string"
+        ],
+        "pattern": "^(.*)$"
+      },
+      "updated_at": {
+        "$id": "#/properties/updated_at",
+        "type": "string",
+        "title": "The Updated_at Schema",
+        "default": "",
+        "examples": [
+          "2015-07-07T15:49:51.230+02:00"
+        ],
+        "pattern": "^(.*)$"
+      },
+      "username": {
+        "$id": "#/properties/username",
+        "type": "string",
+        "title": "The Username Schema",
+        "default": "",
+        "examples": [
+          "string"
+        ],
+        "pattern": "^(.*)$"
+      }
+    }
+  }
+  
