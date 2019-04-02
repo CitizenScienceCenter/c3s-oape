@@ -24,7 +24,7 @@
           ]
         },
         "port": {
-          "default": ":8080",
+          "default": ":9080",
           "enum": [
             ":8080"
           ]
@@ -172,6 +172,7 @@
           "Users"
         ],
         "x-swagger-router-controller": "api.user",
+        "x-openape-ignore": "true",
         "operationId": "reset",
         "summary": "Reset user password",
         "parameters": [
@@ -195,6 +196,7 @@
           "Users"
         ],
         "x-swagger-router-controller": "api.user",
+        "x-openape-ignore": "true",
         "operationId": "verify_reset",
         "summary": "Verify password reset token",
         "responses": {
@@ -238,6 +240,7 @@
           "Users"
         ],
         "x-swagger-router-controller": "api.user",
+        "x-openape-ignore": "true",
         "operationId": "login",
         "summary": "Allow a user to login",
         "responses": {
