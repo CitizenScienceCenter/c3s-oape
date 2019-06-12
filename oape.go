@@ -23,10 +23,10 @@ func main() {
 		body, err := ioutil.ReadAll(r.Body)
 
 		//TODO handle email login
-		bodyUsername, ut, _, err := jsonparser.Get(body, "email")
+		bodyUsername, ut, _, err := jsonparser.Get(body, "username")
 		bodyPassword, pt, _, err := jsonparser.Get(body, "pwd")
 		if ut != jsonparser.NotExist && pt != jsonparser.NotExist || err == nil {
-			uname:= string(bodyUsername[:])
+			uname := string(bodyUsername[:])
 			pwd := string(bodyPassword[:])
 			getJson := fmt.Sprintf(`{
    "select":{
@@ -35,14 +35,16 @@ func main() {
             "table":"users",
             "fields":[
                "email",
-               "id"
+					"id",
+					"username",
+					"api_key"
             ]
          }
       ]
    },
    "where":[
       {
-         "field":"email",
+         "field":"username",
          "table":"users",
          "op":"e",
          "val":"%s",
@@ -63,6 +65,7 @@ func main() {
 			}
 			query := u.ParseObject(jQuery)
 			users := o.DB.GetModels("users", query)
+			print(string(users.Data))
 			if string(users.Data) == "null" {
 				users.Status = 404
 				res = users
@@ -89,4 +92,5 @@ func main() {
 	})
 
 	o.RunServer()
+
 }

@@ -349,6 +349,44 @@
         "requestBody": {
           "$ref": "#/components/requestBodies/User"
         }
+      },
+      "delete": {
+        "security": [
+          {
+            "apiKeyHeader": [
+
+            ]
+          },
+          {
+            "anonUser": [
+
+            ]
+          }
+        ],
+        "tags": [
+          "Users"
+        ],
+        "summary": "Update user details (change password, add details etc)",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/id"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "User deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Users"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found"
+          }
+        }
       }
     },
     "/projects": {
@@ -1586,20 +1624,24 @@
           "id": {
             "type": "string",
             "maxLength": 20,
-            "readOnly": true
+            "readOnly": true,
+            "x-openape-unique": true
           },
           "username": {
-            "type": "string"
+            "type": "string",
+            "x-openape-unique": true
           },
           "email": {
             "type": "string",
-            "format": "email"
+            "format": "email",
+            "x-openape-unique": true
           },
           "pwd": {
             "type": "string"
           },
           "api_key": {
-            "type": "string"
+            "type": "string",
+            "x-openape-autogen": true
           },
           "created_at": {
             "type": "string",
